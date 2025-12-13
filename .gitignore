@@ -1,4 +1,9 @@
 *.dump.S
 *.o
 main
-
+data/
+data/**
+*.vim
+test.py
+images/
+images/**

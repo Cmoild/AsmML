@@ -1,10 +1,11 @@
 all:
 	gcc -c print.S
+	gcc -c matmul_naive.S
 	gcc -c main.c -O2
-	gcc main.o print.o -o main
+	gcc main.o print.o matmul_naive.o -o main
 
 debug:
-	gcc -g -O0 -fno-omit-frame-pointer -no-pie print.S main.c -o main
+	gcc -g -O0 -fno-omit-frame-pointer -no-pie print.S gemm.c matmul_naive.S matmul_t_naive.S relu.S main.c -o main
 
 objdump:
 	objdump -D main > main.dump.S
