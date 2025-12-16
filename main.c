@@ -23,6 +23,8 @@ extern void matmul_t_naive(const float* A, const float* B, const float* C, size_
 
 extern void relu(const float* M, size_t n);
 
+extern void exp8fv(const float* V);
+
 #define ARRAY_SIZE (8)
 int main() {
     // assert(ARR_SIZE % 8 == 0 && ARR_SIZE == 8);
@@ -47,6 +49,11 @@ int main() {
         printf("\n");
     }
 
+    float arr[8] = {1, 2, 3, 4, 5, 6, 7, 8};
+    exp8fv(arr);
+    for (size_t i = 0; i < 8; i++)
+        printf("%f ", arr[i]);
+    printf("\n");
     // free(a);
     // free(b);
     // free(res);
