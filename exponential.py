@@ -14,7 +14,7 @@ def my_exp(x: float) -> float:
     a4 = 0.009618129107628477
     a5 = 0.001333355814642844
 
-    two_f = a0 + a1 * f + a2 * f**2 + a3 * f**3 + a4 * f**4 + a5 * f**5
+    two_f = a0 + f * (a1 + f * (a2 + f * (a3 + f * (a4 + f * a5))))
     ret = two_f * 2**n
     return ret
 

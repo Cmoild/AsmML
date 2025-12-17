@@ -1,5 +1,6 @@
 #include "gemm.h"
 #include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -33,21 +34,21 @@ int main() {
     float res[2 * 2] = {0};
 
     // matmul(a, size, size, b, size, size, 0, res);
-    matmul_t_naive(a, b, res, 2, 2, 2);
-    for (size_t i = 0; i < 2; i++) {
-        for (size_t j = 0; j < 2; j++) {
-            printf("%f ", res[i * 2 + j]);
-        }
-        printf("\n");
-    }
-
-    relu(res, 4);
-    for (size_t i = 0; i < 2; i++) {
-        for (size_t j = 0; j < 2; j++) {
-            printf("%f ", res[i * 2 + j]);
-        }
-        printf("\n");
-    }
+    // matmul_t_naive(a, b, res, 2, 2, 2);
+    // for (size_t i = 0; i < 2; i++) {
+    //     for (size_t j = 0; j < 2; j++) {
+    //         printf("%f ", res[i * 2 + j]);
+    //     }
+    //     printf("\n");
+    // }
+    //
+    // relu(res, 4);
+    // for (size_t i = 0; i < 2; i++) {
+    //     for (size_t j = 0; j < 2; j++) {
+    //         printf("%f ", res[i * 2 + j]);
+    //     }
+    //     printf("\n");
+    // }
 
     float arr[8] = {1, 2, 3, 4, 5, 6, 7, 8};
     exp8fv(arr);
