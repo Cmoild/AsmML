@@ -4,6 +4,7 @@
 # void relu
 # args: float* M, size_t n
 relu:
+    push %rbx
     vxorps %xmm0, %xmm0, %xmm0
     xor %rax, %rax
 
@@ -43,6 +44,7 @@ relu:
     .local .Lend
 .Lend:
     vzeroupper
+    pop %rbx
     ret
     .size relu, . - relu
 
