@@ -5,7 +5,7 @@ all:
 	gcc main.o print.o matmul_naive.o -o main
 
 debug:
-	gcc -g -O0 -fno-omit-frame-pointer -no-pie print.S gemm.c matmul_naive.S matmul_t_naive.S relu.S softmax.S main.c -o main -lm
+	gcc -g -O0 -fno-omit-frame-pointer -no-pie print.S gemm.c matmul_naive.S matmul_t_naive.S relu.S softmax.S mylib.S main.c -o main -lm
 
 objdump:
 	objdump -D main > main.dump.S

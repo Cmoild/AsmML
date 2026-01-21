@@ -107,11 +107,15 @@ for epoch in range(epochs):
         true: NDArray[np.float32] = np.eye(10, dtype=np.float32)[outp.numpy()]
         x = fc1.forward(input)
         x = relu.forward(x)
+        print(x.shape)
         x = fc2.forward(x)
+        print(x.shape)
         pred = softmax.forward(x)
 
         loss, grad_loss = compute_loss(true, pred)
+        print(grad_loss.shape)
         x = fc2.update_grad(grad_loss)
+        print(x.shape)
         x = relu.update_grad(x)
         x = fc1.update_grad(x)
 

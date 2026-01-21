@@ -32,6 +32,42 @@ extern void softmax(float* M, size_t n, size_t m);
 
 extern float maxNfv(float* V, size_t n);
 
+struct Linear {
+    float* weight;
+    size_t weight_m;
+    size_t weight_n;
+    float* bias;
+    size_t bias_m;
+    size_t bias_n;
+    float* input;
+    size_t input_m;
+    size_t input_n;
+    float* output;
+    size_t output_m;
+    size_t output_n;
+    float* grad_input;
+    float* grad_output;
+};
+
+_Static_assert(offsetof(struct Linear, weight) == 0, "");
+_Static_assert(offsetof(struct Linear, weight_m) == 8, "");
+_Static_assert(offsetof(struct Linear, weight_n) == 16, "");
+_Static_assert(offsetof(struct Linear, bias) == 24, "");
+_Static_assert(offsetof(struct Linear, bias_m) == 32, "");
+_Static_assert(offsetof(struct Linear, bias_n) == 40, "");
+_Static_assert(offsetof(struct Linear, input) == 48, "");
+_Static_assert(offsetof(struct Linear, input_m) == 56, "");
+_Static_assert(offsetof(struct Linear, input_n) == 64, "");
+_Static_assert(offsetof(struct Linear, output) == 72, "");
+_Static_assert(offsetof(struct Linear, output_m) == 80, "");
+_Static_assert(offsetof(struct Linear, output_n) == 88, "");
+_Static_assert(offsetof(struct Linear, grad_input) == 96, "");
+_Static_assert(offsetof(struct Linear, grad_output) == 104, "");
+
+extern void linear_forward(struct Linear* module);
+
+extern void memcopy(void* dst, void* src, size_t n);
+
 #define ARRAY_SIZE (8)
 int main() {
     // assert(ARR_SIZE % 8 == 0 && ARR_SIZE == 8);
@@ -40,6 +76,15 @@ int main() {
                    1.3104,  0.6812,  -1.9798, 0.1717,  0.6637,  -0.4301};
     float b[ARRAY_SIZE] = {9, -8, 7, 6, -5, 4, 3, 2};
     float res[2 * 2] = {0};
+
+    float dst[20] = {0};
+
+    char* src_str = "example showing it works pr...";
+    char dst_str[31] = {0};
+
+    memcopy(dst_str, src_str, 31);
+
+    printf("%s\n", dst_str);
 
     // matmul(a, size, size, b, size, size, 0, res);
     // matmul_t_naive(a, b, res, 2, 2, 2);
@@ -57,12 +102,12 @@ int main() {
     //     }
     //     printf("\n");
     // }
-    softmax(a, 2, 10);
+    // softmax(a, 2, 10);
     // float arr[8] = {1, 2, 3, 4, 5, 6, 7, 8};
     // exp8fv(arr);
-    for (size_t i = 0; i < 20; i++)
-        printf("%f ", a[i]);
-    printf("\n");
+    // for (size_t i = 0; i < 20; i++)
+    //     printf("%f == %f\n", a[i], dst[i]);
+    // printf("\n");
     // printf("%f\n", maxNfv(a, 8));
     // printf("%f\n", maxNfv(b, 8));
     // free(a);
