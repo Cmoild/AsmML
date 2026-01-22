@@ -2,7 +2,7 @@
     .globl memcopy
     .type memcopy, @function
 # void memcopy
-# args: void* destinatioin, void* source, size_t n_bytes
+# args: void* destination, void* source, size_t n_bytes
 memcopy:
     xor %rax, %rax
 
