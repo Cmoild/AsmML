@@ -21,8 +21,8 @@ class Linear:
         ).astype(np.float32)
         self.output: NDArray[np.float32] = np.array(None)
         self.input: NDArray[np.float32] = np.array(None)
-        self.grad_input: NDArray[np.float32] = np.array(None)
         self.grad_output: NDArray[np.float32] = np.array(None)
+        self.grad_input: NDArray[np.float32] = np.array(None)
         self.grad_weight: NDArray[np.float32] = np.array(None)
         self.grad_bias: NDArray[np.float32] = np.array(None)
 
@@ -31,12 +31,12 @@ class Linear:
         self.output = x @ self.weight.T + self.bias
         return self.output
 
-    def update_grad(self, grad_input: NDArray[np.float32]) -> NDArray[np.float32]:
-        self.grad_input = grad_input
-        self.grad_output = self.grad_input @ self.weight
-        self.grad_weight = self.grad_input.T @ self.input
-        self.grad_bias = self.grad_input.sum(axis=0)
-        return self.grad_output
+    def update_grad(self, grad_output: NDArray[np.float32]) -> NDArray[np.float32]:
+        self.grad_output = grad_output
+        self.grad_input = self.grad_output @ self.weight
+        self.grad_weight = self.grad_output.T @ self.input
+        self.grad_bias = self.grad_output.sum(axis=0)
+        return self.grad_input
 
 
 class ReLU:
@@ -51,10 +51,10 @@ class ReLU:
         self.output = np.maximum(x, 0)
         return self.output
 
-    def update_grad(self, grad_input: NDArray[np.float32]) -> NDArray[np.float32]:
-        self.grad_input = grad_input
-        self.grad_output = self.grad_input * (self.input > 0)
-        return self.grad_output
+    def update_grad(self, grad_output: NDArray[np.float32]) -> NDArray[np.float32]:
+        self.grad_output = grad_output
+        self.grad_input = self.grad_output * (self.input > 0)
+        return self.grad_input
 
 
 class Softmax:
@@ -107,15 +107,11 @@ for epoch in range(epochs):
         true: NDArray[np.float32] = np.eye(10, dtype=np.float32)[outp.numpy()]
         x = fc1.forward(input)
         x = relu.forward(x)
-        print(x.shape)
         x = fc2.forward(x)
-        print(x.shape)
         pred = softmax.forward(x)
 
         loss, grad_loss = compute_loss(true, pred)
-        print(grad_loss.shape)
         x = fc2.update_grad(grad_loss)
-        print(x.shape)
         x = relu.update_grad(x)
         x = fc1.update_grad(x)
 

@@ -30,7 +30,7 @@ matmul_t_naive:
     jz .Llcol_loop_end
     dec %r9
 
-    mov (%rsp), %rax
+    mov 0x8(%rsp), %rax
     imul %rcx, %rax
     add %r8, %rax
     mov %rax, %r10

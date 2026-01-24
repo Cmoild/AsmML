@@ -13,13 +13,13 @@ extern void matmul(const float* left, const size_t lrows, const size_t lcols, co
 // m - rows A
 // k - cols A, rows B
 // n - cols B
-extern void matmul_naive(const float* A, const float* B, const float* C, size_t m, size_t k,
+extern void matmul_naive(const float* A, const float* B, float* C, size_t m, size_t k,
                          size_t n);
 
 // m - rows A
 // n - rows B
 // k - cols A, cols B
-extern void matmul_t_naive(const float* A, const float* B, const float* C, size_t m, size_t n,
+extern void matmul_t_naive(const float* A, const float* B, float* C, size_t m, size_t n,
                            size_t k);
 
 extern void relu(float* M, size_t n);
@@ -37,7 +37,6 @@ struct Linear {
     size_t weight_m;
     size_t weight_n;
     float* bias;
-    size_t bias_m;
     size_t bias_n;
     float* input;
     size_t input_m;
@@ -53,65 +52,60 @@ _Static_assert(offsetof(struct Linear, weight) == 0, "");
 _Static_assert(offsetof(struct Linear, weight_m) == 8, "");
 _Static_assert(offsetof(struct Linear, weight_n) == 16, "");
 _Static_assert(offsetof(struct Linear, bias) == 24, "");
-_Static_assert(offsetof(struct Linear, bias_m) == 32, "");
-_Static_assert(offsetof(struct Linear, bias_n) == 40, "");
-_Static_assert(offsetof(struct Linear, input) == 48, "");
-_Static_assert(offsetof(struct Linear, input_m) == 56, "");
-_Static_assert(offsetof(struct Linear, input_n) == 64, "");
-_Static_assert(offsetof(struct Linear, output) == 72, "");
-_Static_assert(offsetof(struct Linear, output_m) == 80, "");
-_Static_assert(offsetof(struct Linear, output_n) == 88, "");
-_Static_assert(offsetof(struct Linear, grad_input) == 96, "");
-_Static_assert(offsetof(struct Linear, grad_output) == 104, "");
+_Static_assert(offsetof(struct Linear, bias_n) == 32, "");
+_Static_assert(offsetof(struct Linear, input) == 40, "");
+_Static_assert(offsetof(struct Linear, input_m) == 48, "");
+_Static_assert(offsetof(struct Linear, input_n) == 56, "");
+_Static_assert(offsetof(struct Linear, output) == 64, "");
+_Static_assert(offsetof(struct Linear, output_m) == 72, "");
+_Static_assert(offsetof(struct Linear, output_n) == 80, "");
+_Static_assert(offsetof(struct Linear, grad_input) == 88, "");
+_Static_assert(offsetof(struct Linear, grad_output) == 96, "");
 
 extern void linear_forward(struct Linear* module);
 
 extern void memcopy(void* dst, void* src, size_t n);
 
-#define ARRAY_SIZE (8)
 int main() {
-    // assert(ARR_SIZE % 8 == 0 && ARR_SIZE == 8);
-    float a[20] = {-0.8937, -0.7988, -1.9367, 1.4457,  0.4375,  -1.3356, 0.6597,
-                   -0.1773, -0.6089, -0.0871, -0.4192, -0.0208, -1.4332, 1.2833,
-                   1.3104,  0.6812,  -1.9798, 0.1717,  0.6637,  -0.4301};
-    float b[ARRAY_SIZE] = {9, -8, 7, 6, -5, 4, 3, 2};
-    float res[2 * 2] = {0};
+    float bias[3] = {1,2,3};
+    float weight[6 * 3] = {
+        0.1, 1.1, 2.1,
+        0.2, 1.2, 2.2,
+        0.3, 1.3, 2.3,
+        0.4, 1.4, 2.4,
+        0.5, 1.5, 2.5,
+        0.6, 1.6, 2.6
+    };
+    float weight_t[3 * 6] = {
+        0.1, 0.2, 0.3, 0.4, 0.5, 0.6,
+        1.1, 1.2, 1.3, 1.4, 1.5, 1.6,
+        2.1, 2.2, 2.3, 2.4, 2.5, 2.6
+    };
+    float input[2 * 6] = {
+        1, 2, 3, 4, 5, 6,
+        11, 12, 13, 14, 15, 16
+    };
+    float output[2 * 3] = {0};
+    struct Linear module = {
+        .weight = weight_t,
+        .weight_m = 3,
+        .weight_n = 6,
+        .bias = bias,
+        .bias_n = 3,
+        .input = input,
+        .input_m = 2,
+        .input_n = 6,
+        .output = output,
+        .output_m = 2,
+        .output_n = 3,
+    };
 
-    float dst[20] = {0};
+    linear_forward(&module);
+    // matmul_t_naive(input, weight_t, output, 2, 3, 6);
+    // gemm_naive(input, 2, 6, weight_t, 3, 6, 1, output);
 
-    char* src_str = "example showing it works pr...";
-    char dst_str[31] = {0};
+    for (int i = 0; i < 2 * 3; ++i) printf("%f, ", output[i]);
+    puts("");
 
-    memcopy(dst_str, src_str, 31);
-
-    printf("%s\n", dst_str);
-
-    // matmul(a, size, size, b, size, size, 0, res);
-    // matmul_t_naive(a, b, res, 2, 2, 2);
-    // for (size_t i = 0; i < 2; i++) {
-    //     for (size_t j = 0; j < 2; j++) {
-    //         printf("%f ", res[i * 2 + j]);
-    //     }
-    //     printf("\n");
-    // }
-    //
-    // relu(res, 4);
-    // for (size_t i = 0; i < 2; i++) {
-    //     for (size_t j = 0; j < 2; j++) {
-    //         printf("%f ", res[i * 2 + j]);
-    //     }
-    //     printf("\n");
-    // }
-    // softmax(a, 2, 10);
-    // float arr[8] = {1, 2, 3, 4, 5, 6, 7, 8};
-    // exp8fv(arr);
-    // for (size_t i = 0; i < 20; i++)
-    //     printf("%f == %f\n", a[i], dst[i]);
-    // printf("\n");
-    // printf("%f\n", maxNfv(a, 8));
-    // printf("%f\n", maxNfv(b, 8));
-    // free(a);
-    // free(b);
-    // free(res);
     return 0;
 }
