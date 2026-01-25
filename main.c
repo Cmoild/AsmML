@@ -6,21 +6,22 @@
 #include <assert.h>
 
 extern int print(const char* s);
-extern void matmul(const float* left, const size_t lrows, const size_t lcols, const float* right,
-                   const size_t rrows, const size_t rcols, const char right_is_transposed,
-                   float* result);
 
 // m - rows A
 // k - cols A, rows B
 // n - cols B
-extern void matmul_naive(const float* A, const float* B, float* C, size_t m, size_t k,
-                         size_t n);
+extern void matmul_naive(const float* A, const float* B, float* C, size_t m, size_t k, size_t n);
 
 // m - rows A
 // n - rows B
 // k - cols A, cols B
-extern void matmul_t_naive(const float* A, const float* B, float* C, size_t m, size_t n,
-                           size_t k);
+extern void matmul_t_naive(const float* A, const float* B, float* C, size_t m, size_t n, size_t k);
+
+// m - rows A
+// k - cols A
+// n - cols B
+extern void matmul_left_t_naive(const float* A, const float* B, float* C, size_t m, size_t k,
+                                size_t n);
 
 extern void relu(float* M, size_t n);
 
@@ -46,6 +47,8 @@ struct Linear {
     size_t output_n;
     float* grad_input;
     float* grad_output;
+    float* grad_weight;
+    float* grad_bias;
 };
 
 _Static_assert(offsetof(struct Linear, weight) == 0, "");
@@ -61,30 +64,20 @@ _Static_assert(offsetof(struct Linear, output_m) == 72, "");
 _Static_assert(offsetof(struct Linear, output_n) == 80, "");
 _Static_assert(offsetof(struct Linear, grad_input) == 88, "");
 _Static_assert(offsetof(struct Linear, grad_output) == 96, "");
+_Static_assert(offsetof(struct Linear, grad_weight) == 104, "");
+_Static_assert(offsetof(struct Linear, grad_bias) == 112, "");
 
 extern void linear_forward(struct Linear* module);
 
 extern void memcopy(void* dst, void* src, size_t n);
 
-int main() {
-    float bias[3] = {1,2,3};
-    float weight[6 * 3] = {
-        0.1, 1.1, 2.1,
-        0.2, 1.2, 2.2,
-        0.3, 1.3, 2.3,
-        0.4, 1.4, 2.4,
-        0.5, 1.5, 2.5,
-        0.6, 1.6, 2.6
-    };
-    float weight_t[3 * 6] = {
-        0.1, 0.2, 0.3, 0.4, 0.5, 0.6,
-        1.1, 1.2, 1.3, 1.4, 1.5, 1.6,
-        2.1, 2.2, 2.3, 2.4, 2.5, 2.6
-    };
-    float input[2 * 6] = {
-        1, 2, 3, 4, 5, 6,
-        11, 12, 13, 14, 15, 16
-    };
+void test_linear_forward() {
+    float bias[3] = {1, 2, 3};
+    float weight[6 * 3] = {0.1, 1.1, 2.1, 0.2, 1.2, 2.2, 0.3, 1.3, 2.3,
+                           0.4, 1.4, 2.4, 0.5, 1.5, 2.5, 0.6, 1.6, 2.6};
+    float weight_t[3 * 6] = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 1.1, 1.2, 1.3,
+                             1.4, 1.5, 1.6, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6};
+    float input[2 * 6] = {1, 2, 3, 4, 5, 6, 11, 12, 13, 14, 15, 16};
     float output[2 * 3] = {0};
     struct Linear module = {
         .weight = weight_t,
@@ -101,11 +94,12 @@ int main() {
     };
 
     linear_forward(&module);
-    // matmul_t_naive(input, weight_t, output, 2, 3, 6);
-    // gemm_naive(input, 2, 6, weight_t, 3, 6, 1, output);
 
-    for (int i = 0; i < 2 * 3; ++i) printf("%f, ", output[i]);
+    for (int i = 0; i < 2 * 3; ++i)
+        printf("%f, ", output[i]);
     puts("");
+}
 
+int main() {
     return 0;
 }

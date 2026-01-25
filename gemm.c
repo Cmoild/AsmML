@@ -5,8 +5,8 @@
 
 void gemm_naive(const float* left, const size_t lrows, const size_t lcols, const float* right,
                 const size_t rrows, const size_t rcols, const char right_is_transposed,
-                float* result) {
-    if (right_is_transposed) {
+                const char left_is_transposed, float* result) {
+    if (right_is_transposed && !left_is_transposed) {
         if (lcols != rcols) {
             fprintf(stderr, "incorrect matrix shape\n");
             return;
@@ -20,7 +20,7 @@ void gemm_naive(const float* left, const size_t lrows, const size_t lcols, const
                 }
             }
         }
-    } else {
+    } else if (!right_is_transposed && !left_is_transposed) {
         if (lcols != rrows) {
             fprintf(stderr, "incorrect matrix shape\n");
             return;
@@ -34,5 +34,22 @@ void gemm_naive(const float* left, const size_t lrows, const size_t lcols, const
                 }
             }
         }
+    } else if (!right_is_transposed && left_is_transposed) {
+        if (lrows != rrows) {
+            fprintf(stderr, "incorrect matrix shape\n");
+            return;
+        }
+#pragma omp parallel for
+        for (size_t lcol = 0; lcol < lcols; lcol++) {
+            for (size_t rcol = 0; rcol < rcols; rcol++) {
+                for (size_t lrow = 0; lrow < lrows; lrow++) {
+                    result[rcols * lcol + rcol] +=
+                        left[lcols * lrow + lcol] * right[rcols * lrow + rcol];
+                }
+            }
+        }
+    } else {
+        fprintf(stderr, "incorrect arguments\n");
+        return;
     }
 }

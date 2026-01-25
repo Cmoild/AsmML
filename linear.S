@@ -1,18 +1,20 @@
 # struct Linear {
-#     float* weight#
-#     size_t weight_m#
-#     size_t weight_n#
-#     float* bias#
-#     size_t bias_n#
-#     float* input#
-#     size_t input_m#
-#     size_t input_n#
-#     float* output#
-#     size_t output_m#
-#     size_t output_n#
-#     float* grad_input#
-#     float* grad_output#
-# }#
+#     float* weight
+#     size_t weight_m
+#     size_t weight_n
+#     float* bias
+#     size_t bias_n
+#     float* input
+#     size_t input_m
+#     size_t input_n
+#     float* output
+#     size_t output_m
+#     size_t output_n
+#     float* grad_input
+#     float* grad_output
+#     float* grad_weight
+#     float* grad_bias
+# }
 
     .section .text
     .globl linear_forward
@@ -68,6 +70,60 @@ linear_forward:
     ret
     .size linear_forward, . - linear_forward
 
+    .globl batch_sum
+    .type batch_sum, @function
+# void batch_sum
+# args: float* M, float* v,
+# size_t n (num of blocks), size_t m (block size)
+# len(M) == n * m, len(v) == m
+batch_sum:
+    mov %rcx, %r8
+    xor %rax, %rax
+    vxorps %ymm0, %ymm0, %ymm0
+
+    and $~7, %r8
+    jz .Lclear_output_end
+.Lclear_output:
+    vmovups %ymm0, (%rsi, %rax, 4)
+
+    add $8, %rax
+    cmp %r8, %rax
+    jb .Lclear_output
+.Lclear_output_end:
+    mov %rcx, %r9
+    and $7, %r9
+    jz .Lclear_end
+
+    lea (%rsi, %rax, 4), %r8
+    xor %rax, %rax
+.Lclear_tail:
+    vmovss %xmm0, (%r8, %rax, 4)
+
+    add $8, %rax
+    cmp %r9, %rax
+    jb .Lclear_tail
+.Lclear_end:
+
+    mov %rdx, %r8
+.Lblocks_loop:
+    test %r8, %r8
+    jz .Lblocks_loop_end
+    dec %r8
+
+    mov %rcx, %r9
+    xor %rax, %rax
+    and $~7, %r9
+    jz .Lsimd_loop_end
+.Lsimd_loop:
+    vmovups (
+    // TODO: доделать эту штуку
+
+    jmp .Lblocks_loop
+.Lblocks_loop_end:
+    vzeroupper
+    ret
+    .size batch_sum, . - batch_sum
+
     .globl linear_update_grad
     .type linear_update_grad, @function
 # void linear_update_grad
@@ -77,7 +133,11 @@ linear_update_grad:
     mov %rsp, %rbp
 
     # Algotithm:
-    # - 
+    # - compute grad_input
+    # - compute grad_weight
+    # - compute grad_bias
+
+    
 
     mov %rbp, %rsp
     pop %rbp
