@@ -99,7 +99,7 @@ batch_sum:
 .Lclear_tail:
     vmovss %xmm0, (%r8, %rax, 4)
 
-    add $8, %rax
+    inc %rax
     cmp %r9, %rax
     jb .Lclear_tail
 .Lclear_end:
@@ -110,13 +110,41 @@ batch_sum:
     jz .Lblocks_loop_end
     dec %r8
 
+    mov %rcx, %rax
+    imul %r8, %rax
+    lea (%rdi, %rax, 4), %r10
+
     mov %rcx, %r9
     xor %rax, %rax
     and $~7, %r9
     jz .Lsimd_loop_end
 .Lsimd_loop:
-    vmovups (
-    // TODO: доделать эту штуку
+    vmovups (%r10, %rax, 4), %ymm0
+    vmovups (%rsi, %rax, 4), %ymm1
+    vaddps %ymm0, %ymm1, %ymm0
+    vmovups %ymm0, (%rsi, %rax, 4)
+
+    add $8, %rax
+    cmp %r9, %rax
+    jb .Lsimd_loop
+.Lsimd_loop_end:
+    mov %rcx, %r9
+    and $7, %r9
+    jz .Ltail_end
+
+    lea (%r10, %rax, 4), %r10
+    lea (%rsi, %rax, 4), %r11
+    xor %rax, %rax
+.Ltail_loop:
+    vmovss (%r10, %rax, 4), %xmm0
+    vmovss (%r11, %rax, 4), %xmm1
+    vaddss %xmm0, %xmm1, %xmm0
+    vmovss %xmm0, (%r11, %rax, 4)
+
+    inc %rax
+    cmp %r9, %rax
+    jb .Ltail_loop
+.Ltail_end:
 
     jmp .Lblocks_loop
 .Lblocks_loop_end:
@@ -137,7 +165,38 @@ linear_update_grad:
     # - compute grad_weight
     # - compute grad_bias
 
-    
+    mov 0x48(%rdi), %rcx
+    mov 0x50(%rdi), %r8
+    mov 0x10(%rdi), %r9
+    mov 0x58(%rdi), %rdx
+    mov (%rdi), %rsi
+    push %rdi
+    mov 0x60(%rdi), %rdi
+
+    sub $8, %rsp
+    call matmul_naive
+    add $8, %rsp
+    pop %rdi
+
+    mov 0x48(%rdi), %rcx
+    mov 0x50(%rdi), %r8
+    mov 0x38(%rdi), %r9
+    mov 0x68(%rdi), %rdx
+    mov 0x28(%rdi), %rsi
+    push %rdi
+    mov 0x60(%rdi), %rdi
+
+    sub $8, %rsp
+    call matmul_left_t_naive
+    add $8, %rsp
+    pop %rdi
+
+    mov 0x70(%rdi), %rsi
+    mov 0x48(%rdi), %rdx
+    mov 0x50(%rdi), %rcx
+    mov 0x60(%rdi), %rdi
+
+    call batch_sum
 
     mov %rbp, %rsp
     pop %rbp
