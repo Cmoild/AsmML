@@ -39,4 +39,12 @@ def lib():
     lib.relu_update_grad.argtypes = [ctypes.POINTER(ReLUASM)]
     lib.relu_update_grad.restype = None
 
+    # Softmax
+    lib.softmax.argtypes = [
+        ctypes.POINTER(ctypes.c_float),
+        ctypes.c_size_t,
+        ctypes.c_size_t,
+    ]
+    lib.softmax.restype = None
+
     return lib

@@ -103,7 +103,7 @@ maxNfv:
     .type softmax, @function
 # void softmax
 # args: float* M, size_t n (num of blocks), size_t m (block size)
-# len(M) == n * m
+# M.shape == (n, m)
 softmax:
     push %rbp
     mov %rsp, %rbp
