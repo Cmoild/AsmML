@@ -87,7 +87,7 @@ transform = transforms.Compose(
     ]
 )
 
-train_dataset = MNIST(root="./data", train=True, download=True, transform=transform)
+train_dataset = MNIST(root="../data", train=True, download=True, transform=transform)
 loader = DataLoader(train_dataset, 50, True)
 
 
