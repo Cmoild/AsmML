@@ -126,11 +126,15 @@ void test_linear_forward() {
 
 void test_linear_update_grad() {
     float bias[3] = {1, 2, 3};
-    float weight_t[3 * 6] = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 1.1, 1.2, 1.3,
-                             1.4, 1.5, 1.6, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6};
-    float input[2 * 6] = {1, 2, 3, 4, 5, 6, 11, 12, 13, 14, 15, 16};
+    float weight_t[3 * 6] = {0.12440023, -0.42457172, 0.3063704,  0.38398394,  -0.79650676,
+                             -0.5316126, 0.05219063,  -0.1291055, -0.00685904, -0.34825373,
+                             0.35901272, 0.31753224,  0.02695692, 0.4601943,   0.19085988,
+                             -0.3508047, 0.15054187,  -0.39146218};
+    float input[2 * 6] = {0.3047171, -1.0399841, 0.7504512,   0.9405647,  -1.9510351, -1.3021795,
+                          0.1278404, -0.3162426, -0.01680116, -0.8530439, 0.879398,   0.7777919};
     float grad_input[2 * 6] = {0};
-    float grad_output[2 * 3] = {2.1, 2.2, 2.3, 2.4, 2.5, 2.6};
+    float grad_output[2 * 3] = {0.0660307,   1.1272413,  0.46750933,
+                                -0.85929245, 0.36875078, -0.95888263};
     float grad_bias[3] = {0};
     float grad_weight[3 * 6] = {0};
     struct Linear module = {.weight = weight_t,
@@ -150,13 +154,13 @@ void test_linear_update_grad() {
 
     linear_update_grad(&module);
 
-    puts("Grad output");
+    puts("Grad input");
     for (int i = 0; i < 2 * 6; ++i)
         printf("%f, ", grad_input[i]);
     puts("\nGrad weight");
     for (int i = 0; i < 3 * 6; ++i)
         printf("%f, ", grad_weight[i]);
-    puts("\nGrad output");
+    puts("\nGrad bias");
     for (int i = 0; i < 3; ++i)
         printf("%f, ", grad_bias[i]);
     puts("");
@@ -195,6 +199,6 @@ void test_relu_update_grad() {
 }
 
 int main() {
-    test_relu_update_grad();
+    test_linear_update_grad();
     return 0;
 }

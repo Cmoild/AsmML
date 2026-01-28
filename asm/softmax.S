@@ -5,25 +5,25 @@
 # args: float* V
 exp8fv:
     vmovups (%rdi), %ymm0
-    vbroadcastss .LC_log2e, %ymm1
+    vbroadcastss .LC_log2e(%rip), %ymm1
     vmulps %ymm0, %ymm1, %ymm0 // y = x * math.log2(math.e)
     vroundps $1, %ymm0, %ymm1 // n = math.floor(y)
     vsubps %ymm1, %ymm0, %ymm0 // f = y - n
 
-    vbroadcastss .LC_a4, %ymm2
-    vbroadcastss .LC_a5, %ymm3
+    vbroadcastss .LC_a4(%rip), %ymm2
+    vbroadcastss .LC_a5(%rip), %ymm3
     vfmadd231ps %ymm3, %ymm0, %ymm2 // a4 + f * a5
-    vbroadcastss .LC_a3, %ymm3
+    vbroadcastss .LC_a3(%rip), %ymm3
     vfmadd231ps %ymm2, %ymm0, %ymm3 // a3 + f * (...)
-    vbroadcastss .LC_a2, %ymm2
+    vbroadcastss .LC_a2(%rip), %ymm2
     vfmadd231ps %ymm3, %ymm0, %ymm2 // a2 + f * (...)
-    vbroadcastss .LC_a1, %ymm3
+    vbroadcastss .LC_a1(%rip), %ymm3
     vfmadd231ps %ymm2, %ymm0, %ymm3 // a1 + f * (...)
-    vbroadcastss .LC_a0, %ymm2
+    vbroadcastss .LC_a0(%rip), %ymm2
     vfmadd231ps %ymm3, %ymm0, %ymm2 // a0 + f * (...)
 
     vcvtps2dq %ymm1, %ymm3 // int(n)
-    vpbroadcastd .LC_IEEE754_bias, %ymm1
+    vpbroadcastd .LC_IEEE754_bias(%rip), %ymm1
     vpaddd %ymm1, %ymm3, %ymm3 // n + 127
     vpslld $23, %ymm3, %ymm3 // (n + 127) << 23
     vmulps %ymm2, %ymm3, %ymm0 // 2**n * two_f
@@ -45,25 +45,25 @@ expNfv:
     dec %rsi
 
     vmovss (%rdi, %rsi, 4), %xmm0
-    vmovss .LC_log2e, %xmm1
+    vmovss .LC_log2e(%rip), %xmm1
     vmulss %xmm0, %xmm1, %xmm0
     roundss $1, %xmm0, %xmm1
     vsubss %xmm1, %xmm0, %xmm0
 
-    vmovss .LC_a4, %xmm2
-    vmovss .LC_a5, %xmm3
+    vmovss .LC_a4(%rip), %xmm2
+    vmovss .LC_a5(%rip), %xmm3
     vfmadd231ss %xmm3, %xmm0, %xmm2
-    vmovss .LC_a3, %xmm3
+    vmovss .LC_a3(%rip), %xmm3
     vfmadd231ss %xmm2, %xmm0, %xmm3
-    vmovss .LC_a2, %xmm2
+    vmovss .LC_a2(%rip), %xmm2
     vfmadd231ss %xmm3, %xmm0, %xmm2
-    vmovss .LC_a1, %xmm3
+    vmovss .LC_a1(%rip), %xmm3
     vfmadd231ss %xmm2, %xmm0, %xmm3
-    vmovss .LC_a0, %xmm2
+    vmovss .LC_a0(%rip), %xmm2
     vfmadd231ss %xmm3, %xmm0, %xmm2
 
     vcvtss2si %xmm1, %eax
-    add .LC_IEEE754_bias, %eax
+    add .LC_IEEE754_bias(%rip), %eax
     shl $23, %eax
     vmovd %eax, %xmm3
     vmulss %xmm2, %xmm3, %xmm0

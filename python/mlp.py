@@ -8,7 +8,7 @@ from torchvision import transforms
 
 class Linear:
     def __init__(self, in_features: int, out_features: int):
-        rng = np.random.default_rng()
+        rng = np.random.default_rng(42)
         self.weight: NDArray[np.float32] = rng.normal(
             0.0,
             np.sqrt(1.0 / in_features),
@@ -81,44 +81,50 @@ def compute_loss(
     return loss, grad_loss
 
 
-transform = transforms.Compose(
-    [
-        transforms.ToTensor(),
-    ]
-)
+def main():
+    transform = transforms.Compose(
+        [
+            transforms.ToTensor(),
+        ]
+    )
 
-train_dataset = MNIST(root="../data", train=True, download=True, transform=transform)
-loader = DataLoader(train_dataset, 50, True)
+    train_dataset = MNIST(root="./data", train=True, download=True, transform=transform)
+    loader = DataLoader(train_dataset, 50, True)
+
+    fc1 = Linear(28 * 28, 100)
+    fc2 = Linear(100, 10)
+    relu = ReLU()
+    softmax = Softmax()
+
+    epochs = 10
+    lr = np.float32(0.001)
+
+    for epoch in range(epochs):
+        for i, (inp, outp) in enumerate(loader):
+            B = inp.shape[0]
+            inp = inp.reshape(B, 28 * 28)
+            input: NDArray[np.float32] = inp.numpy()
+            true: NDArray[np.float32] = np.eye(10, dtype=np.float32)[outp.numpy()]
+            x = fc1.forward(input)
+            x = relu.forward(x)
+            x = fc2.forward(x)
+            pred = softmax.forward(x)
+
+            loss, grad_loss = compute_loss(true, pred)
+            x = fc2.update_grad(grad_loss)
+            x = relu.update_grad(x)
+            x = fc1.update_grad(x)
+
+            fc2.weight -= lr * fc2.grad_weight
+            fc2.bias -= lr * fc2.grad_bias
+            fc1.weight -= lr * fc1.grad_weight
+            fc1.bias -= lr * fc1.grad_bias
+
+            if i % 100 == 0:
+                print(
+                    f"Epoch: {epoch} \t| Step: {i}/{len(loader)}  \t| Loss: {loss:.4f}"
+                )
 
 
-fc1 = Linear(28 * 28, 100)
-fc2 = Linear(100, 10)
-relu = ReLU()
-softmax = Softmax()
-
-epochs = 10
-lr = np.float32(0.001)
-
-for epoch in range(epochs):
-    for i, (inp, outp) in enumerate(loader):
-        B = inp.shape[0]
-        inp = inp.reshape(B, 28 * 28)
-        input: NDArray[np.float32] = inp.numpy()
-        true: NDArray[np.float32] = np.eye(10, dtype=np.float32)[outp.numpy()]
-        x = fc1.forward(input)
-        x = relu.forward(x)
-        x = fc2.forward(x)
-        pred = softmax.forward(x)
-
-        loss, grad_loss = compute_loss(true, pred)
-        x = fc2.update_grad(grad_loss)
-        x = relu.update_grad(x)
-        x = fc1.update_grad(x)
-
-        fc2.weight -= lr * fc2.grad_weight
-        fc2.bias -= lr * fc2.grad_bias
-        fc1.weight -= lr * fc1.grad_weight
-        fc1.bias -= lr * fc1.grad_bias
-
-        if i % 100 == 0:
-            print(f"Epoch: {epoch} \t| Step: {i}/{len(loader)}  \t| Loss: {loss:.4f}")
+if __name__ == "__main__":
+    main()

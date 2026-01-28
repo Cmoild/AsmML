@@ -7,3 +7,7 @@ data/**
 test.py
 images/
 images/**
+__pycache__
+build/
+build/**
+*.so
