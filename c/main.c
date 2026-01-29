@@ -95,6 +95,24 @@ extern void relu_forward(struct ReLU* module);
 
 extern void relu_update_grad(struct ReLU* module);
 
+extern void ce_loss_grad(float* true_v, float* pred, size_t n, size_t m, float* grad_loss);
+
+float my_log(float x) {
+    uint32_t bytes = *(uint32_t*)&x;
+    uint32_t mantissa = (bytes & 0x7FFFFF) + (127 << 23);
+    uint32_t exponent = (bytes >> 23) - 127;
+    float m = *(float*)&mantissa;
+    float e = (float)exponent;
+    float f = (m - 1.) / (m + 1.);
+    float f2 = f * f;
+    float p = f + f * f2 * (1. / 3. + f2 * (1. / 5. + f2 / 7.));
+    return 2 * p + e * 0.6931471805599453;
+}
+
+extern void logNfv(float* v, size_t n);
+
+extern float ce_loss_val(float* true_v, float* pred, size_t n, size_t m);
+
 void test_linear_forward() {
     float bias[3] = {1, 2, 3};
     float weight[6 * 3] = {0.1, 1.1, 2.1, 0.2, 1.2, 2.2, 0.3, 1.3, 2.3,
@@ -199,6 +217,11 @@ void test_relu_update_grad() {
 }
 
 int main() {
-    test_linear_update_grad();
+    float true_v[16] = {1., 0., 0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0.};
+    float pred[16] = {0.15645802, 0.04077571, 0.2443305,  0.2954901, 0.01639597, 0.03137122,
+                      0.13109352, 0.08408498, 0.08079742, 0.0350124, 0.19797567, 0.17884834,
+                      0.08777501, 0.25365815, 0.13113871, 0.03479431};
+    float loss = ce_loss_val(true_v, pred, 2, 8);
+    printf("%f\n", loss);
     return 0;
 }

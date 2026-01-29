@@ -47,4 +47,21 @@ def lib():
     ]
     lib.softmax.restype = None
 
+    lib.ce_loss_grad.argtypes = [
+        ctypes.POINTER(ctypes.c_float),
+        ctypes.POINTER(ctypes.c_float),
+        ctypes.c_size_t,
+        ctypes.c_size_t,
+        ctypes.POINTER(ctypes.c_float),
+    ]
+    lib.ce_loss_grad.restype = None
+
+    lib.ce_loss_val.argtypes = [
+        ctypes.POINTER(ctypes.c_float),
+        ctypes.POINTER(ctypes.c_float),
+        ctypes.c_size_t,
+        ctypes.c_size_t,
+    ]
+    lib.ce_loss_val.restype = ctypes.c_float
+
     return lib
