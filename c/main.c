@@ -113,6 +113,12 @@ extern void logNfv(float* v, size_t n);
 
 extern float ce_loss_val(float* true_v, float* pred, size_t n, size_t m);
 
+extern void set_seed(uint32_t seed);
+
+extern uint32_t randu32();
+
+extern float rand_uniform_float(float scale, float bias);
+
 void test_linear_forward() {
     float bias[3] = {1, 2, 3};
     float weight[6 * 3] = {0.1, 1.1, 2.1, 0.2, 1.2, 2.2, 0.3, 1.3, 2.3,
@@ -217,11 +223,8 @@ void test_relu_update_grad() {
 }
 
 int main() {
-    float true_v[16] = {1., 0., 0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0.};
-    float pred[16] = {0.15645802, 0.04077571, 0.2443305,  0.2954901, 0.01639597, 0.03137122,
-                      0.13109352, 0.08408498, 0.08079742, 0.0350124, 0.19797567, 0.17884834,
-                      0.08777501, 0.25365815, 0.13113871, 0.03479431};
-    float loss = ce_loss_val(true_v, pred, 2, 8);
-    printf("%f\n", loss);
+    set_seed(42);
+    for (int i = 0; i < 100; i++)
+        printf("%f\n", rand_uniform_float(2.0f, -1.f));
     return 0;
 }
