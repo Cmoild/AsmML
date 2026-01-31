@@ -8,7 +8,7 @@ from python.mlp import Softmax, compute_loss
 
 @pytest.mark.parametrize(
     "batch_sz,n_feat",
-    [(1, 8), (4, 64), (8, 128), (1000, 1000)],
+    [(3, 10), (4, 32), (1001, 1001), (235, 486)],
 )
 def test_softmax_forward(lib: ctypes.CDLL, batch_sz: int, n_feat: int):
     rng = np.random.default_rng(42)
@@ -47,10 +47,6 @@ def test_ce_loss_function(lib: ctypes.CDLL, batch_sz: int, n_feat: int):
         ctypes.c_size_t(n_feat),
         grad_loss.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
     )
-    print(true)
-    print(pred)
-    print(batch_sz)
-    print(n_feat)
     loss = lib.ce_loss_val(
         true.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
         pred.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),

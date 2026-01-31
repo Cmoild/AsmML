@@ -25,6 +25,13 @@ exp8fv:
     vcvtps2dq %ymm1, %ymm3 // int(n)
     vpbroadcastd .LC_IEEE754_bias(%rip), %ymm1
     vpaddd %ymm1, %ymm3, %ymm3 // n + 127
+
+    vpxor %ymm4, %ymm4, %ymm4
+    vpmaxsd %ymm4, %ymm3, %ymm3
+
+    vpbroadcastd .LC_254(%rip), %ymm4
+    vpminsd %ymm4, %ymm3, %ymm3
+
     vpslld $23, %ymm3, %ymm3 // (n + 127) << 23
     vmulps %ymm2, %ymm3, %ymm0 // 2**n * two_f
 
@@ -62,11 +69,18 @@ expNfv:
     vmovss .LC_a0(%rip), %xmm2
     vfmadd231ss %xmm3, %xmm0, %xmm2
 
-    vcvtss2si %xmm1, %eax
-    add .LC_IEEE754_bias(%rip), %eax
-    shl $23, %eax
-    vmovd %eax, %xmm3
-    vmulss %xmm2, %xmm3, %xmm0
+    vcvtps2dq %xmm1, %xmm3 // int(n)
+    vpbroadcastd .LC_IEEE754_bias(%rip), %xmm1
+    vpaddd %xmm1, %xmm3, %xmm3 // n + 127
+
+    vpxor %xmm4, %xmm4, %xmm4
+    vpmaxsd %xmm4, %xmm3, %xmm3
+
+    vpbroadcastd .LC_254(%rip), %xmm4
+    vpminsd %xmm4, %xmm3, %xmm3
+
+    vpslld $23, %xmm3, %xmm3 // (n + 127) << 23
+    vmulss %xmm2, %xmm3, %xmm0 // 2**n * two_f
 
     vmovss %xmm0, (%rdi, %rsi, 4)
 
@@ -239,3 +253,5 @@ softmax:
 .float 0.001333355814642844
 .LC_IEEE754_bias:
 .int 127
+.LC_254:
+.int 254
